@@ -1,0 +1,90 @@
+---
+title: 'STA 380 Part 2_Exercises'
+author: "Ben Sullivan"
+date: "8/4/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Visual story telling part1: green buildings
+
+We first began analysis by creating various scatter plots. This was done to get a good first look at any strong relationships that could be found in the data. 
+
+
+## Market Segmentation
+
+First load in the data an take a look at what we're working with.
+
+```{r echo = FALSE}
+library(ggplot2)
+library(LICORS)  # for kmeans++
+library(foreach)
+library(mosaic)
+library(cluster)
+
+soc_mkt = read.csv('../data/social_marketing.csv', header=TRUE)
+head(soc_mkt)
+
+
+```
+
+There appears to be 37 columns that categorize the data. 3 of which do not appear to be useful, uncategorized, spam, and adult so we will not include them. They are most likely from bots. Looking at the data I think the results will best be interpreted into 5 clusters (or categories) of people. With 32 catergories of data and about 6 per cluster, less clusters would make the targeted markets too generic and more would lead weak relationships to the markets.
+
+```{r echo = FALSE}
+
+# Center and scale the data
+X = soc_mkt[,-c(1:2,6,36:37)]
+X = scale(X, center=TRUE, scale=TRUE)
+
+# Extract the centers and scales from the rescaled data (which are named attributes)
+mu = attr(X,"scaled:center")
+sigma = attr(X,"scaled:scale")
+
+#Run K means ++
+# Using kmeans++ initialization
+clust = kmeanspp(X, k=5, nstart=25)
+
+clust$center[1,]*sigma + mu
+clust$center[2,]*sigma + mu
+clust$center[3,]*sigma + mu
+clust$center[4,]*sigma + mu
+clust$center[5,]*sigma + mu
+
+# A few plots with cluster membership shown
+# qplot is in the ggplot2 library
+
+#Cluster: This cluster appears to be associated with younger people of age at or near a college student
+qplot(online_gaming, college_uni, data=soc_mkt, color=factor(clust$cluster))
+#Cluster: This clusters associated to fashion, beuaty and shopping interests, probably mostly women
+qplot(fashion, beauty, data=soc_mkt, color=factor(clust$cluster))
+#Cluster: This cluster is people who are very active and like out doors, fitness, and nutrition
+qplot(outdoors, personal_fitness, data=soc_mkt, color=factor(clust$cluster))
+#Cluster: This cluster appears to be very global associated to travel and current events, perhaps international minded
+qplot(travel, current_events, data=soc_mkt, color=factor(clust$cluster))
+#Cluster: Older, family oriented people strong relations to parenting and religion
+qplot(religion, parenting, data=soc_mkt, color=factor(clust$cluster))
+
+#sum the errors
+clust$tot.withinss
+clust$betweenss
+
+
+# Which cars are in which clusters?
+which(clust$cluster == 1)
+which(clust$cluster == 2)
+which(clust$cluster == 3)
+which(clust$cluster == 3)
+which(clust$cluster == 3)
+
+```
+
+
+
+
+After grouping NutrientH20's social media audience into 5 separate clusters, we have identified 5 new market segments for the company to target. The clustering allowed to look for different categories of tweets that may have appeared to relate to each, then plot these categories and identify their association with each cluster. The first cluster identified showed assimilation to online gaming and college universities. This segment of users appears to be younger in age, at or around that of a college student. The next segment is contained users with strong liking for fashion and beauty. They are likely to be primarily women who enjoy shopping. The third segment is people who are physically active and enjoy things related to the out doors, fitness, nutrition, and adventure. The fourth segment market appears to be very global, associated to travel and current events, perhaps internationally minded. Lastly we identified a market that is very family oriented, they are likely to be older and have children, they enjoy talking about their families and religion. These segment markets identified for specific users in NutrientH20's social media audience and they can now effectively target ads with both association to their product and its audiences interests.
+
+
+
