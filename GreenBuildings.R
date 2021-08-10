@@ -1,6 +1,5 @@
 library(mosaic)
 green = read.csv('greenbuildings.csv')
-#green = subset(green, leasing_rate > 40)
 summary(green)
 
 plot(green$leasing_rate, green$Rent)
@@ -38,6 +37,25 @@ mean(b_only$Rent)
 hist(a_only$Rent)
 hist(b_only$Rent)
 
+## Bootstrapping to normalize
+boot5 = do(2500)*{
+  mean(resample(a_only)$Rent)
+}
+head(boot5)
+hist(boot5$result, 30)
+sd(boot5$result)
+mean(boot5$result)
+
+
+boot6 = do(2500)*{
+  mean(resample(b_only)$Rent)
+}
+head(boot6)
+hist(boot6$result, 30)
+sd(boot6$result)
+mean(boot6$result)
+
+
 ############ over all the rent is much higher in A or the premium area
 
 green_onlya = subset(a_only, green_rating==1)
@@ -50,6 +68,7 @@ mean(non_greena$Rent)
 hist(green_onlya$Rent)
 hist(non_greena$Rent)
 
+## Bootstrapping to normalize
 boot1 = do(2500)*{
   mean(resample(green_onlya)$Rent)
 }
@@ -78,6 +97,7 @@ mean(non_greenb$Rent)
 hist(green_onlyb$Rent)
 hist(non_greenb$Rent)
 
+## Bootstrapping to normalize
 boot3 = do(2500)*{
   mean(resample(green_onlyb)$Rent)
 }
@@ -101,6 +121,11 @@ nrow(green_onlyb)/nrow(b_only)*100
 # A much higher proportion of green are in the A which raises the average price
 ## plotting
 
+
+hist(boot6$result, 45, col = 'pink', xlab = 'Rent($ per sqft)', main = 'Green bulidings and non green buildings in the prime location', xlim=c(25,35))
+hist(boot5$result, 45, col = 'purple', xlab = 'Rent($ per sqft)', main = 'Green bulidings and non green buildings in the prime location', add = T)
+  legend("right", c("Area B", "Area A"), fill=c("pink", "purple"))
+
 hist(boot1$result, 45, col = 'green', xlab = 'Rent($ per sqft)', main = 'Green bulidings and non green buildings in the prime location')
 hist(boot2$result, 45, col = 'blue', add = T)+
   legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
@@ -111,9 +136,11 @@ hist(boot4$result, 30, col = 'blue', add = T)+
 
 
 hist(non_greena$Rent, xlab = 'Mean Rent for location A', ylab = 'Frequency', col = 'blue', main = 'Relative frequency of green to non greeen buildings in group A', breaks = 25)
-hist(green_onlya$Rent, xlab = 'Mean Rent for location A', ylab = 'Frequency', col = 'green', breaks = 25, add = T)
+hist(green_onlya$Rent, xlab = 'Mean Rent for location A', ylab = 'Frequency', col = 'green', breaks = 25, add = T)+
+  legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
 
 hist(non_greenb$Rent, xlab = 'Mean Rent for location B', ylab = 'Frequency', col = 'blue', main = 'Relative frequency of green to non greeen buildings in group B', breaks = 25)
-hist(green_onlyb$Rent, xlab = 'Mean Rent for location B', ylab = 'Frequency', col = 'green',  breaks = 25, add = T)
+hist(green_onlyb$Rent, xlab = 'Mean Rent for location B', ylab = 'Frequency', col = 'green',  breaks = 25, add = T)+
+  legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
 
 
