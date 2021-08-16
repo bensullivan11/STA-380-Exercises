@@ -1,0 +1,275 @@
+---
+title: "Intro to ML, 2nd Half Problems"
+output:
+  pdf_document: default
+  html_document: default
+group: Garrett Soter, AJ Cooper, Trevor Moos, Ben Sullivan
+---
+
+Out first step was to explore the data and try to undestand why things moved the way the did
+
+```{r Create variables}
+library(mosaic)
+green = read.csv('greenbuildings.csv')
+green_only = subset(green, green_rating==1)
+non_green = subset(green, green_rating!=1)
+a_only = subset(green, class_a==1)
+b_only = subset(green, class_b==1)
+green_onlya = subset(a_only, green_rating==1)
+non_greena = subset(a_only, green_rating!=1)
+green_onlyb = subset(b_only, green_rating==1)
+non_greenb = subset(b_only, green_rating!=1)
+```
+
+```{r Summary of the data}
+summary(green)
+```
+
+Below you can see that there seems to be a trend between leasing rates and the amount of rent charged. This seemed to be at the very least correlated. We decided to keep this in the data when moving forward with out analysis
+
+```{r Leasing Rate verses rent}
+plot(green$leasing_rate, green$Rent)
+```
+
+```{r 'Green Building Rent vs Associated Cluseter Rent'}
+ggplot(green_only) + 
+  geom_point(aes(x=cluster_rent, y=Rent, color = class_a))+
+  labs(x = 'Cluster Rent ($ per sq ft)', y = 'Green Buliding Rent ($ per sq ft)', title = 'Green Building Rent vs Associated Cluseter Rent')
+
+```
+
+We then Boot strapped the data to normalize the means for future analysis
+
+```{r BootStrap}
+boot5 = do(2500)*{
+  mean(resample(a_only)$Rent)
+}
+boot6 = do(2500)*{
+  mean(resample(b_only)$Rent)
+}
+boot1 = do(2500)*{
+  mean(resample(green_onlya)$Rent)
+}
+boot2 = do(2500)*{
+  mean(resample(non_greena)$Rent)
+}
+boot3 = do(2500)*{
+  mean(resample(green_onlyb)$Rent)
+}
+boot4 = do(2500)*{
+  mean(resample(non_greenb)$Rent)
+}
+```
+
+We then found the proportion of green buildings to normal buildings in group 'a' and then for group 'b'. We hypothesisesd that the seemingly higher rate for the rent in the green bulidings was because there were more in A and not becaus the were inheirently more valuable.
+
+```{r Finding the proportion of green in the neighborhoods}
+nrow(green_onlya)/nrow(a_only)*100
+print('For A')
+nrow(green_onlyb)/nrow(b_only)*100
+print('For b')
+```
+
+17.3% of buildings in A were green where as only 3.6% in B
+
+```{r Visualizing the diffrence between  green and non green rent in the prime location}
+hist(boot6$result, 45, col = 'pink', xlab = 'Rent($ per sqft)', main = 'Prices of the mean rent in both places', xlim=c(25,35))
+hist(boot5$result, 45, col = 'purple', xlab = 'Rent($ per sqft)', add = T)
+  legend("right", c("Area B", "Area A"), fill=c("pink", "purple"))
+```
+
+You can clearly see a price difference in the mean prices, the valley between the histograms of boot strapped mean process clearly shows this is a significant split
+
+```{r The difference of rents between green and non green in the prime location}
+hist(boot1$result, 45, col = 'green', xlab = 'Rent($ per sqft)', main = 'Green bulidings and non green buildings in the prime location')
+hist(boot2$result, 45, col = 'blue', add = T)
+  legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
+```
+
+This actually demonstrates a point counter to the hypothesis of the 'Excel Guru', when we contorl of the location the prime location green bulidings actually rent out at a discount.
+
+```{r Same as above but with B}
+hist(boot3$result, 30, col = 'green', xlab = 'Rent($ per sqft)', main = 'Green bulidings and non green buildings in the lesser location')
+hist(boot4$result, 30, col = 'blue', add = T)
+  legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
+```
+
+Same as in the B side of town, you can see a higher mean housing price for the non_green houses, this also runs counter to the analysis of the in house exel guru.
+
+```{r compating reletive frequency of the green to non green in the data set, to confirm the differing raitos}
+hist(non_greena$Rent, xlab = 'Mean Rent for location A', ylab = 'Frequency', col = 'blue', main = 'Relative frequency of green to non greeen buildings in group A', breaks = 25)
+hist(green_onlya$Rent, xlab = 'Mean Rent for location A', ylab = 'Frequency', col = 'green', breaks = 25, add = T)
+  legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
+```
+
+```{r}
+hist(non_greenb$Rent, xlab = 'Mean Rent for location B', ylab = 'Frequency', col = 'blue', main = 'Relative frequency of green to non greeen buildings in group B', breaks = 25)
+hist(green_onlyb$Rent, xlab = 'Mean Rent for location B', ylab = 'Frequency', col = 'green',  breaks = 25, add = T)
+  legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
+```
+
+It is clearly visible that there are much less green houses in the B part of town, driving the aggragate green price up, dispite it being cheaper than comprabible houses, as they say in the business LOCATION LOCATION LOCATION.
+
+
+##THE PORTFOLIO SIMULATION
+### First Portfolio
+```{r Portolio packages, and loading stock market data}
+install.packages('mosaic')
+install.packages('quantmod')
+install.packages('foreach')
+library(mosaic)
+library(quantmod)
+library(foreach)
+
+### First Portfolio
+portfolio_div = c('DBEF', 'DBA', 'DRN','GLD', 'TAN', 'GRID', 'SPY')
+prices = getSymbols(portfolio_div, from = '2016-08-06')
+
+for(ticker in portfolio_div){
+  expr = paste0(ticker, 'a = adjustOHLC(', ticker, ')')
+  eval(parse(text=expr))
+}
+
+all_returns = cbind(ClCl(DBEFa), ClCl(DBAa),ClCl(DRNa),ClCl(GLDa),ClCl(TANa),ClCl(GRIDa),ClCl(SPYa))
+all_returns = as.matrix(na.omit(all_returns))
+N = nrow(all_returns)
+```
+I created this first portfolio in the hopes of getting a safe portfolio with some access to rewards with in a Biden Harris clean energy administration
+These are the stocks with in it:
+Tan and Grid are sustainable - because biden politics
+SPY is S&P index, heavily weighted towards this - tried and true
+GLD is gold - hedges against crazy market movement
+DBA is agraculture - you always need food
+DBEF is a hedged equity fund - another amrket fund
+DRN is realestate - moves with economy & am betting on bull market
+```{r The model}
+wealth = 100000
+simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
+  total_wealth = wealth
+  my_weights = c(.1,.1,.1,.1,.1,.1,.4)
+  holdings = total_wealth * my_weights
+  n_days = 20
+  wealthtracker = rep(0, n_days)
+  for(today in 1:n_days){
+    return.today = resample(all_returns, 1, orig.ids = FALSE)
+    holdings = holdings + holdings*return.today
+    total_wealth = sum(holdings)
+    wealthtracker[today] = total_wealth
+  }
+    wealthtracker
+}
+```
+The VAR for the safeish portfolio is this
+```{r Quantile}
+quantile(simulation[,n_days]- wealth, prob=0.05)
+```
+### Second Portfolio
+```{r Second Portfolio}
+portfolio_sus = c('FAN', 'CNRG', 'ERTH','ACES', 'TAN')
+
+prices = getSymbols(portfolio_sus, from = '2016-08-06')
+
+for(ticker in portfolio_sus){
+  expr = paste0(ticker, 'a = adjustOHLC(', ticker, ')')
+  eval(parse(text=expr))
+}
+
+all_returns = cbind(ClCl(FANa), ClCl(CNRGa),ClCl(ERTHa),ClCl(ACESa),ClCl(TANa))
+all_returns = as.matrix(na.omit(all_returns))
+N = nrow(all_returns)
+```
+all indexes are for clean energy, with the biden admin creating policies that are enviro-oriented these could work out
+```{r}
+wealth = 100000
+simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
+  total_wealth = wealth
+  my_weights = c(.2,.2,.2,.2,.2)
+  holdings = total_wealth * my_weights
+  n_days = 20
+  wealthtracker = rep(0, n_days)
+  for(today in 1:n_days){
+    return.today = resample(all_returns, 1, orig.ids = FALSE)
+    holdings = holdings + holdings*return.today
+    total_wealth = sum(holdings)
+    wealthtracker[today] = total_wealth
+  }
+  wealthtracker
+}
+head(simulation)
+hist(simulation[,n_days], 25)
+
+simulation
+plot(wealthtracker, type = 'l')
+```
+The VAR for the green portfolio is this
+```{r}
+quantile(simulation[,n_days]- wealth, prob=0.05)
+```
+
+###Portfolio 3
+```{r}
+portfolio_tech = c('SOXX', 'SKYY', 'CIBR','HACK', 'CLOU', 'BLOK','FINX','XNTK')
+
+prices = getSymbols(portfolio_tech, from = '2016-08-06')
+
+for(ticker in portfolio_tech){
+  expr = paste0(ticker, 'a = adjustOHLC(', ticker, ')')
+  eval(parse(text=expr))
+}
+
+all_returns = cbind(ClCl(SOXXa), ClCl(SKYYa),ClCl(CIBRa),ClCl(HACKa),ClCl(CLOUa),ClCl(BLOKa),ClCl(FINXa),ClCl(XNTKa))
+all_returns = as.matrix(na.omit(all_returns))
+N = nrow(all_returns)
+```
+This is full of stocks that track tech indexes
+
+```{r}
+wealth = 100000
+simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
+  total_wealth = wealth
+  my_weights = c(.125,.125,.125,.125,.125)
+  holdings = total_wealth * my_weights
+  n_days = 20
+  wealthtracker = rep(0, n_days)
+  for(today in 1:n_days){
+    return.today = resample(all_returns, 1, orig.ids = FALSE)
+    holdings = holdings + holdings*return.today
+    total_wealth = sum(holdings)
+    wealthtracker[today] = total_wealth
+  }
+  wealthtracker
+}
+```
+
+The VAR for the Tech portfolio is this
+```{r}
+quantile(simulation[,n_days]- wealth, prob=0.05)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
