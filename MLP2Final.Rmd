@@ -5,10 +5,15 @@ output:
   html_document: default
 group: Garrett Soter, AJ Cooper, Trevor Moos, Ben Sullivan
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Visual story telling part1: green buildings
 
-Out first step was to explore the data and try to undestand why things moved the way the did
+We first began analysis by creating various scatter plots. This was done to get a good first look at any strong relationships that could be found in the data. 
 
-```{r Create variables}
+
+```{r include = FALSE}
 library(mosaic)
 green = read.csv('greenbuildings.csv')
 green_only = subset(green, green_rating==1)
@@ -21,17 +26,17 @@ green_onlyb = subset(b_only, green_rating==1)
 non_greenb = subset(b_only, green_rating!=1)
 ```
 
-```{r Summary of the data}
+```{r include = FALSE}
 summary(green)
 ```
 
 Below you can see that there seems to be a trend between leasing rates and the amount of rent charged. This seemed to be at the very least correlated. We decided to keep this in the data when moving forward with out analysis
 
-```{r Leasing Rate verses rent}
+```{r echo = FALSE}
 plot(green$leasing_rate, green$Rent)
 ```
 
-```{r 'Green Building Rent vs Associated Cluseter Rent'}
+```{r echo = FALSE}
 ggplot(green_only) + 
   geom_point(aes(x=cluster_rent, y=Rent, color = class_a))+
   labs(x = 'Cluster Rent ($ per sq ft)', y = 'Green Buliding Rent ($ per sq ft)', title = 'Green Building Rent vs Associated Cluseter Rent')
@@ -40,7 +45,7 @@ ggplot(green_only) +
 
 We then Boot strapped the data to normalize the means for future analysis
 
-```{r BootStrap}
+```{r include = FALSE}
 boot5 = do(2500)*{
   mean(resample(a_only)$Rent)
 }
@@ -63,7 +68,7 @@ boot4 = do(2500)*{
 
 We then found the proportion of green buildings to normal buildings in group 'a' and then for group 'b'. We hypothesisesd that the seemingly higher rate for the rent in the green bulidings was because there were more in A and not becaus the were inheirently more valuable.
 
-```{r Finding the proportion of green in the neighborhoods}
+```{r echo = FALSE}
 nrow(green_onlya)/nrow(a_only)*100
 print('For A')
 nrow(green_onlyb)/nrow(b_only)*100
@@ -72,7 +77,7 @@ print('For b')
 
 17.3% of buildings in A were green where as only 3.6% in B
 
-```{r Visualizing the diffrence between  green and non green rent in the prime location}
+```{r echo = FALSE}
 hist(boot6$result, 45, col = 'pink', xlab = 'Rent($ per sqft)', main = 'Prices of the mean rent in both places', xlim=c(25,35))
 hist(boot5$result, 45, col = 'purple', xlab = 'Rent($ per sqft)', add = T)
   legend("right", c("Area B", "Area A"), fill=c("pink", "purple"))
@@ -80,7 +85,7 @@ hist(boot5$result, 45, col = 'purple', xlab = 'Rent($ per sqft)', add = T)
 
 You can clearly see a price difference in the mean prices, the valley between the histograms of boot strapped mean process clearly shows this is a significant split
 
-```{r The difference of rents between green and non green in the prime location}
+```{r echo = FALSE}
 hist(boot1$result, 45, col = 'green', xlab = 'Rent($ per sqft)', main = 'Green bulidings and non green buildings in the prime location')
 hist(boot2$result, 45, col = 'blue', add = T)
   legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
@@ -88,7 +93,7 @@ hist(boot2$result, 45, col = 'blue', add = T)
 
 This actually demonstrates a point counter to the hypothesis of the 'Excel Guru', when we contorl of the location the prime location green bulidings actually rent out at a discount.
 
-```{r Same as above but with B}
+```{r echo = FALSE}
 hist(boot3$result, 30, col = 'green', xlab = 'Rent($ per sqft)', main = 'Green bulidings and non green buildings in the lesser location')
 hist(boot4$result, 30, col = 'blue', add = T)
   legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
@@ -96,13 +101,13 @@ hist(boot4$result, 30, col = 'blue', add = T)
 
 Same as in the B side of town, you can see a higher mean housing price for the non_green houses, this also runs counter to the analysis of the in house exel guru.
 
-```{r compating reletive frequency of the green to non green in the data set, to confirm the differing raitos}
+```{r echo = FALSE}
 hist(non_greena$Rent, xlab = 'Mean Rent for location A', ylab = 'Frequency', col = 'blue', main = 'Relative frequency of green to non greeen buildings in group A', breaks = 25)
 hist(green_onlya$Rent, xlab = 'Mean Rent for location A', ylab = 'Frequency', col = 'green', breaks = 25, add = T)
   legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
 ```
 
-```{r}
+```{r echo = FALSE}
 hist(non_greenb$Rent, xlab = 'Mean Rent for location B', ylab = 'Frequency', col = 'blue', main = 'Relative frequency of green to non greeen buildings in group B', breaks = 25)
 hist(green_onlyb$Rent, xlab = 'Mean Rent for location B', ylab = 'Frequency', col = 'green',  breaks = 25, add = T)
   legend("right", c("Green", "Non_green"), fill=c("green", "blue"))
@@ -112,18 +117,15 @@ It is clearly visible that there are much less green houses in the B part of tow
 
 
 ##THE PORTFOLIO SIMULATION
-```{r Packages}
+```{r include=FALSE}
 rm(list = ls())
-install.packages('quantmod')
-install.packages('mosaic')
-install.packages('foreach')
 library(mosaic)
 library(quantmod)
 library(foreach)
 ```
 
 ### First Portfolio
-```{r First Portolio loading stock market data}
+```{r include=FALSE}
 ### First Portfolio
 portfolio_div = c('DBEF', 'DBA', 'DRN','GLD', 'TAN', 'GRID', 'SPY')
 prices = getSymbols(portfolio_div, from = '2016-08-06')
@@ -137,7 +139,7 @@ all_returns = cbind(ClCl(DBEFa), ClCl(DBAa),ClCl(DRNa),ClCl(GLDa),ClCl(TANa),ClC
 all_returns = as.matrix(na.omit(all_returns))
 N = nrow(all_returns)
 ```
-I created this first portfolio in the hopes of getting a safe portfolio with some access to rewards with in a Biden Harris clean energy administration
+We created this first portfolio in the hopes of getting a safe portfolio with some access to rewards with in a Biden Harris clean energy administration
 These are the stocks with in it:
 Tan and Grid are sustainable - because biden politics
 SPY is S&P index, heavily weighted towards this - tried and true
@@ -145,7 +147,7 @@ GLD is gold - hedges against crazy market movement
 DBA is agraculture - you always need food
 DBEF is a hedged equity fund - another amrket fund
 DRN is realestate - moves with economy & am betting on bull market
-```{r The model}
+```{r echo=FALSE}
 wealth = 100000
 simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
   total_wealth = wealth
@@ -164,15 +166,17 @@ simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
 head(simulation)
 hist(simulation[,n_days], 25)
 
+```
+```{r echo=FALSE}
 simulation
 plot(wealthtracker, type = 'l')
 ```
-The VAR for the safeish portfolio is this
-```{r Quantile}
+The VAR for the safeish portfolio is this. Meaning you can be 95% confident this is the most you'll lose
+```{r echo = FALSE}
 quantile(simulation[,n_days]- wealth, prob=0.05)
 ```
 ### Second Portfolio
-```{r Second Portfolio}
+```{r include=FALSE}
 portfolio_sus = c('FAN', 'CNRG', 'ERTH','ACES', 'TAN')
 
 prices = getSymbols(portfolio_sus, from = '2016-08-06')
@@ -187,7 +191,7 @@ all_returns = as.matrix(na.omit(all_returns))
 N = nrow(all_returns)
 ```
 all indexes are for clean energy, with the biden admin creating policies that are enviro-oriented these could work out
-```{r}
+```{r echo=FALSE}
 wealth = 100000
 simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
   total_wealth = wealth
@@ -206,16 +210,18 @@ simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
 head(simulation)
 hist(simulation[,n_days], 25)
 
+```
+```{r echo=FALSE}
 simulation
 plot(wealthtracker, type = 'l')
 ```
-The VAR for the green portfolio is this
+The VAR for the green portfolio is this. Meaning you can be 95% confident this is the most you'll lose
 ```{r}
 quantile(simulation[,n_days]- wealth, prob=0.05)
 ```
 
 ###Portfolio 3
-```{r}
+```{r include=FALSE}
 portfolio_tech = c('SOXX', 'SKYY', 'CIBR','HACK', 'CLOU', 'BLOK','FINX','XNTK')
 
 prices = getSymbols(portfolio_tech, from = '2016-08-06')
@@ -231,7 +237,7 @@ N = nrow(all_returns)
 ```
 This is full of stocks that track tech indexes
 
-```{r}
+```{r echo=FALSE}
 wealth = 100000
 simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
   total_wealth = wealth
@@ -250,69 +256,262 @@ simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
 head(simulation)
 hist(simulation[,n_days], 25)
 
+```
+```{r echo=FALSE}
 simulation
 plot(wealthtracker, type = 'l')
-```
-
-The VAR for the Tech portfolio is this
-```{r}
+``` 
+The VAR for the Tech portfolio is this. Meaning you can be 95% confident this is the most you'll lose
+```{r echo=FALSE}
 quantile(simulation[,n_days]- wealth, prob=0.05)
 ```
 
 
+## Market Segmentation
+
+First load in the data an take a look at what we're working with.
+
+```{r echo = FALSE}
+library(ggplot2)
+library(LICORS)  # for kmeans++
+library(foreach)
+library(mosaic)
+library(cluster)
+soc_mkt = read.csv('social_marketing.csv', header=TRUE)
+head(soc_mkt)
+```
+
+There appears to be 37 columns that categorize the data. 3 of which do not appear to be useful, uncategorized, spam, and adult so we will not include them. They are most likely from bots. Looking at the data I think the results will best be interpreted into 5 clusters (or categories) of people. With 32 catergories of data and about 6 per cluster, less clusters would make the targeted markets too generic and more would lead weak relationships to the markets.
+
+```{r echo = FALSE}
+# Center and scale the data
+X = soc_mkt[,-c(1:2,6,36:37)]
+X = scale(X, center=TRUE, scale=TRUE)
+# Extract the centers and scales from the rescaled data (which are named attributes)
+mu = attr(X,"scaled:center")
+sigma = attr(X,"scaled:scale")
+#Run K means ++
+# Using kmeans++ initialization
+clust = kmeanspp(X, k=5, nstart=25)
+clust$center[1,]*sigma + mu
+clust$center[2,]*sigma + mu
+clust$center[3,]*sigma + mu
+clust$center[4,]*sigma + mu
+clust$center[5,]*sigma + mu
+# A few plots with cluster membership shown
+# qplot is in the ggplot2 library
+#Cluster: This cluster appears to be associated with younger people of age at or near a college student
+qplot(online_gaming, college_uni, data=soc_mkt, color=factor(clust$cluster))
+#Cluster: This clusters associated to fashion, beuaty and shopping interests, probably mostly women
+qplot(fashion, beauty, data=soc_mkt, color=factor(clust$cluster))
+#Cluster: This cluster is people who are very active and like out doors, fitness, and nutrition
+qplot(outdoors, personal_fitness, data=soc_mkt, color=factor(clust$cluster))
+#Cluster: This cluster appears to be very global associated to travel and current events, perhaps international minded
+qplot(travel, current_events, data=soc_mkt, color=factor(clust$cluster))
+#Cluster: Older, family oriented people strong relations to parenting and religion
+qplot(religion, parenting, data=soc_mkt, color=factor(clust$cluster))
+#sum the errors
+clust$tot.withinss
+clust$betweenss
+# Which cars are in which clusters?
+which(clust$cluster == 1)
+which(clust$cluster == 2)
+which(clust$cluster == 3)
+which(clust$cluster == 3)
+which(clust$cluster == 3)
+```
 
 
 
 
+After grouping NutrientH20's social media audience into 5 separate clusters, we have identified 5 new market segments for the company to target. The clustering allowed to look for different categories of tweets that may have appeared to relate to each, then plot these categories and identify their association with each cluster. The first cluster identified showed assimilation to online gaming and college universities. This segment of users appears to be younger in age, at or around that of a college student. The next segment is contained users with strong liking for fashion and beauty. They are likely to be primarily women who enjoy shopping. The third segment is people who are physically active and enjoy things related to the out doors, fitness, nutrition, and adventure. The fourth segment market appears to be very global, associated to travel and current events, perhaps internationally minded. Lastly we identified a market that is very family oriented, they are likely to be older and have children, they enjoy talking about their families and religion. These segment markets identified for specific users in NutrientH20's social media audience and they can now effectively target ads with both association to their product and its audiences interests.
+
+# Author Attribution
+
+## Set up
+```{r Set Up}
+library(tm) 
+library(magrittr)
+library(e1071)
+library(caret)
+library(class)
+library(plyr)
+library(dplyr)
+library(e1071)
+library(randomForest)
+
+readerPlain = function(fname){
+  readPlain(elem=list(content=readLines(fname)), id=fname, language='en') }
+```
+
+## Train Set Up
+```{r Train Set Up}
+train = Sys.glob('ReutersC50/C50train/*')
+
+list_of_work = NULL
+train_labels = NULL
+
+for(author in train) {
+  authors = substring(author, first=30)
+  work = Sys.glob(paste0(author, '/*.txt'))
+  list_of_work = append(list_of_work, work)
+  train_labels = append(train_labels, rep(authors, length(work)))
+}
+
+all_work_train = lapply(list_of_work, readerPlain) 
+names(all_work_train) = list_of_work
+names(all_work_train) = sub('.txt', '', names(all_work_train))
+```
+
+## Creating a Train Mining Corpus and Pre-Processing
+```{r Train Corpus and Pre-Processing}
+train_corp = Corpus(VectorSource(all_work_train))
+
+train_corp = tm_map(train_corp, content_transformer(tolower))
+train_corp = tm_map(train_corp, content_transformer(removeNumbers))
+train_corp = tm_map(train_corp, content_transformer(removePunctuation))
+train_corp = tm_map(train_corp, content_transformer(stripWhitespace))
+train_corp = tm_map(train_corp, content_transformer(removeWords), stopwords("SMART"))
+
+train_DTM = DocumentTermMatrix(train_corp, list(weighting=weightTfIdf))
+train_DTM = removeSparseTerms(train_DTM, 0.95)
+train_DTM
+train_DTM = as.matrix(train_DTM)
+train_DTM = as.data.frame(train_DTM)
+```
+
+## Test Set Up
+```{r Test Set Up}
+test = Sys.glob('ReutersC50/C50test/*')
+
+list_of_work = NULL
+test_labels = NULL
+
+for(author in test) {
+  authors = substring(author, first=30)
+  work = Sys.glob(paste0(author, '/*.txt'))
+  list_of_work = append(list_of_work, work)
+  test_labels = append(test_labels, rep(authors, length(work)))
+}
+
+all_work_test = lapply(list_of_work, readerPlain) 
+names(all_work_test) = list_of_work
+names(all_work_test) = sub('.txt', '', names(all_work_test))
+```
+
+## Creating a Test Mining Corpus and Pre-Processing
+```{r Test Corpus and Pre-Processing}
+test_corp = Corpus(VectorSource(all_work_test))
+
+test_corp = tm_map(test_corp, content_transformer(tolower))
+test_corp = tm_map(test_corp, content_transformer(removeNumbers))
+test_corp = tm_map(test_corp, content_transformer(removePunctuation))
+test_corp = tm_map(test_corp, content_transformer(stripWhitespace))
+test_corp = tm_map(test_corp, content_transformer(removeWords), stopwords("SMART"))
+
+test_DTM = DocumentTermMatrix(test_corp, list(weighting=weightTfIdf, 
+                                              dictionary=colnames(train_DTM)))
+test_DTM = removeSparseTerms(test_DTM, 0.95)
+test_DTM
+test_DTM = as.matrix(test_DTM)
+test_DTM = as.data.frame(test_DTM)
+```
+
+## Dimensionality Reduction
+```{r Dimensionality Reduction}
+train_DTM = train_DTM[,which(colSums(train_DTM) != 0)] 
+test_DTM = test_DTM[,which(colSums(test_DTM) != 0)]
+
+train_DTM = train_DTM[,intersect(colnames(test_DTM),colnames(train_DTM))]
+test_DTM = test_DTM[,intersect(colnames(test_DTM),colnames(train_DTM))]
+
+prin_comp = prcomp(train_DTM,scale=TRUE)
+
+train_class = data.frame(prin_comp$x[,1:592])
+test_class <- scale(test_DTM) %*% prin_comp$rotation[,1:592]
+test_class <- as.data.frame(test_class)
+```
+
+## Naive Bayes
+```{r Naive Bayes Model}
+train_class['classifier'] = train_labels
+test_class['result'] = test_labels
+
+classifiers = as.factor(train_class$classifier)
+results = as.factor(test_class$result)
+
+author_nb = naiveBayes(classifiers~., data=train_class)
+nb_preds = predict(author_nb, test_class)
+
+temp = as.data.frame(cbind(results,nb_preds))
+temp$tag = ifelse(temp$results == temp$nb_preds,1,0)
+sum(temp$tag)*100/nrow(temp)
+```
+
+## Random Forest
+```{r Random Forest Model}
+set.seed(1)
+
+author_rf = randomForest(classifiers~.,data=train_class, ntree=500, mtry=8,importance=TRUE)
+rf_preds = predict(author_rf,data=test_class)
+author_rf
+
+temp = as.data.frame(cbind(results,rf_preds))
+temp$tag = ifelse(temp$results == temp$rf_preds,1,0)
+sum(temp$tag)*100/nrow(temp)
+```
+
+## K-Nearest Neighbors
+```{r KNN Model}
+train_class = na.omit(train_class)
+test_class = na.omit(test_class)
+train_x = as.factor(subset(train_class, select = -c(classifiers)))
+test_x = as.factor(subset(test_class,select=-c(results)))
+classifiers = as.factor(train_class$classifier)
+
+knn_preds = knn(train_x,test_x,classifiers,k=1)
+
+temp = as.data.frame(cbind(results,knn_preds))
+temp$tag = ifelse(temp$results == temp$knn_preds,1,0)
+sum(temp$tag)*100/nrow(temp)
+```
+##Association Rules problem
+```{r}
+library(reshape2)
+library(arules)
+library(arulesViz)
+```
+
+```{r}
+#loading and cleaning data which can be forced into a transaction type for the apriori algorithm
+grocery_data=read.csv('groceries.txt', header = FALSE)
+grocery_data$List=rownames(grocery_data)
+grocery_data$List=as.integer(grocery_data$List)
+grocery_melt=melt(grocery_data, id.vars='List')
+grocery_melt=grocery_melt[,-2]
+grocery_melt=grocery_melt[!(grocery_melt$value == ""), ]
+```
 
 
+```{r}
+#converting the list into the transaction form for the apriori algorithm
+grocery_melt$List=as.factor(grocery_melt$List)
+grocery_lists=split(x=grocery_melt$value, f=grocery_melt$List)
+grocery_transactions = as(grocery_lists, "transactions")
+```
 
+```{r}
+#creating the association rules
+grocery_rules=apriori(grocery_transactions, parameter=list(support=.005, confidence=.1, maxlen=10))
+#list of all association rules
+inspect(grocery_rules)
+#graphs for some metrics, two-key plot shows short lists have higher support and low confidence while longer lists tend to be the opposite
+plot(grocery_rules)
+plot(grocery_rules, method='two-key plot')
+#visualization of clusters of items bought together based on specific confidence and support cutoffs
+sub1 = subset(grocery_rules, subset=confidence > 0.01 & support > 0.005)
+summary(sub1)
+plot(sub1, method='graph')
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Add the next thing here
 
