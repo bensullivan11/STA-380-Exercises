@@ -112,15 +112,18 @@ It is clearly visible that there are much less green houses in the B part of tow
 
 
 ##THE PORTFOLIO SIMULATION
-### First Portfolio
-```{r Portolio packages, and loading stock market data}
-install.packages('mosaic')
+```{r Packages}
+rm(list = ls())
 install.packages('quantmod')
+install.packages('mosaic')
 install.packages('foreach')
 library(mosaic)
 library(quantmod)
 library(foreach)
+```
 
+### First Portfolio
+```{r First Portolio loading stock market data}
 ### First Portfolio
 portfolio_div = c('DBEF', 'DBA', 'DRN','GLD', 'TAN', 'GRID', 'SPY')
 prices = getSymbols(portfolio_div, from = '2016-08-06')
@@ -158,6 +161,11 @@ simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
   }
     wealthtracker
 }
+head(simulation)
+hist(simulation[,n_days], 25)
+
+simulation
+plot(wealthtracker, type = 'l')
 ```
 The VAR for the safeish portfolio is this
 ```{r Quantile}
@@ -239,6 +247,11 @@ simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
   }
   wealthtracker
 }
+head(simulation)
+hist(simulation[,n_days], 25)
+
+simulation
+plot(wealthtracker, type = 'l')
 ```
 
 The VAR for the Tech portfolio is this
@@ -272,4 +285,34 @@ quantile(simulation[,n_days]- wealth, prob=0.05)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Add the next thing here
 
