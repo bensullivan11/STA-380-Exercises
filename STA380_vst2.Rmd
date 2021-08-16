@@ -1,0 +1,170 @@
+---
+title: 'STA 380 Exercises: Visual Storytelling 2'
+output: word_document
+---
+
+```{r}
+#loading of the data and converting the categorical columns into factors
+library(ggplot2)
+flight_data=read.csv('ABIA.csv')
+flight_data=flight_data[-1]
+str(flight_data)
+flight_data$UniqueCarrier=as.factor(flight_data$UniqueCarrier)
+no_divert_no_cancel_fd=flight_data[(flight_data$Diverted==0 & flight_data$CancellationCode==''),]
+```
+
+
+
+```{r}
+#plotting distributions of flights per month, day of month, day of week, and unique carriers
+
+#month is mostly uniform, though flights peak in th summer and tended to tail by the end of the year
+ggplot(flight_data, aes(Month)) +
+  geom_bar(fill = "#0073C2FF")
+
+#day of month is irrelevant to flight volume
+ggplot(flight_data, aes(DayofMonth)) +
+  geom_bar(fill = "#0073C2FF")
+
+#week days were fairly even, saturday's were the least flown day
+ggplot(flight_data, aes(DayOfWeek)) +
+  geom_bar(fill = "#0073C2FF")
+
+#WN is southwest which is the overwhelming majority of flights to and from AIBA
+ggplot(flight_data, aes(UniqueCarrier)) +
+  geom_bar(fill = "#0073C2FF")
+
+```
+
+```{r Simple Delay Histograms}
+#Here are some histograms of all the different delays, but we will focus mostly on arrival delays
+
+hist(x=ArrDelay, col="lightblue", main="Histogram of Arrival Delays", 
+     xlab="Arrival Delays") 
+hist(x=DepDelay, col="lightblue", main="Histogram of Departure Delays", 
+     xlab="Departure Delays")
+hist(x=CarrierDelay, col="lightblue", main="Histogram of Carrier Delays", 
+     xlab="Carrier Delays")
+hist(x=WeatherDelay, col="lightblue", main="Histogram of Weather Delays", 
+     xlab="Weather Delays")
+hist(x=NASDelay, col="lightblue", main="Histogram of NAS Delays", 
+     xlab="NAS Delays")
+hist(x=SecurityDelay, col="lightblue", main="Histogram of Security Delays", 
+     xlab="Security Delays")
+hist(x=LateAircraftDelay, col="lightblue", main="Histogram of Late Aircraft Delays", 
+     xlab="Late Aircraft Delays")
+```
+
+
+```{r Delays by Month}
+# Arrival Delays frequency per month (count of any time delay)
+ArrMonth <- ggplot(data=ArrDf, aes(x=Month, y=ArrDelay)) +
+  geom_bar(stat="identity", position='dodge', fill="steelblue") +
+  ggtitle('Arrival Delays by Month') +
+  ylab('Arrival Delays')
+ArrMonth
+
+# Arrival Delays frequency per day of the week. Interesting to note that saturday is so frequent, when as we see below, is shortest for the average delay
+ArrDayOfWeek <- ggplot(data=ArrDf, aes(x=DayOfWeek, y=ArrDelay)) +
+  geom_bar(stat="identity", position='dodge', fill="steelblue") +
+  ggtitle('Arrival Delays by Day of Week') +
+  ylab('Arrival Delays')
+ArrDayOfWeek
+
+# Arrival Delays plotted over time of day. Delays appear to mount up as the day goes on.
+ArrDayOfWeek <- ggplot(data=ArrDf, aes(x=DepTime, y=ArrDelay)) +
+  geom_point(col="red", size=1) +
+  ggtitle('Arrival Delays by Time of Day') +
+  ylab('Arrival Delays')
+ArrDayOfWeek
+
+```
+
+```{r}
+#plot of the distribution of delays, overall median delay time is about the same for almost all of the different carriers.
+plot(no_divert_no_cancel_fd$UniqueCarrier, no_divert_no_cancel_fd$ArrDelay, labels=no_divert_no_cancel_fd$UniqueCarrier, cex.axis=0.9)
+```
+```{r}
+#calculating number of delayed flights per carrier
+wn_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'WN',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'WN',])
+nineE_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == '9E',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == '9E',])
+aa_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'AA',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'AA',])
+b6_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'B6',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'B6',])
+co_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'CO',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'CO',])
+dl_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'DL',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'DL',])
+ev_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'EV',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'EV',])
+f9_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'F9',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'F9',])
+mq_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'MQ',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'MQ',])
+nw_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'NW',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'NW',])
+oh_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'OH',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'OH',])
+oo_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'OO',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'UA',])
+ua_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'UA',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'UA',])
+us_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'US',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'US',])
+xe_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'XE',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'XE',])
+yv_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'YV',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'YV',])
+```
+
+
+```{r}
+delay_prop_vec=c(nineE_delay_prop, aa_delay_prop, b6_delay_prop, co_delay_prop, dl_delay_prop, ev_delay_prop, f9_delay_prop, mq_delay_prop, nw_delay_prop, oh_delay_prop, oo_delay_prop, ua_delay_prop, us_delay_prop, wn_delay_prop, xe_delay_prop, yv_delay_prop)
+
+
+#plot of the percentage of flights which are delayed per carrier, 94% of OO's flights are delayed, otherwise mostly uniform
+barplot(delay_prop_vec, names.arg=sort(unique(no_divert_no_cancel_fd$UniqueCarrier),decreasing=FALSE))
+```
+
+```{r}
+#plots of arrival delay in relation to the distance the plane has to travel, no correlation
+plot(no_divert_no_cancel_fd$Distance, no_divert_no_cancel_fd$ArrDelay, type='p')
+cor(no_divert_no_cancel_fd$Distance, no_divert_no_cancel_fd$ArrDelay)
+```
+
+
+
+```{r}
+#converting more columns to factors for these graphs
+no_divert_no_cancel_fd$Origin=as.factor(no_divert_no_cancel_fd$Origin)
+no_divert_no_cancel_fd$Dest=as.factor(no_divert_no_cancel_fd$Dest)
+
+#graoh of average flight delay based on flight origin
+ggplot(data=no_divert_no_cancel_fd, aes(ArrDelay)) +
+  stat_summary(aes(y = Origin), fun = "mean", geom = "bar", orientation = 'y') +
+  theme(axis.text.y = element_text(size = 6))  
+
+#graph of average flight delay based on flight destination
+ggplot(data=no_divert_no_cancel_fd, aes(ArrDelay)) +
+  stat_summary(aes(y = Dest), fun = "mean", geom = "bar", orientation = 'y') +
+  theme(axis.text.y = element_text(size = 6)) 
+```
+
+
+```{r}
+#average arrival delay plotted agaist the month and day of the week
+
+#september, october, and november all have very short delays, december, june, and march all have above average delays, the rest of the months are fairly uniform
+ggplot(data=no_divert_no_cancel_fd, aes(ArrDelay)) +
+  stat_summary(aes(y = Month), fun = "mean", geom = "bar", orientation = 'y') +
+  theme(axis.text.y = element_text(size = 6)) 
+
+#Saturday's are less flown days, so reduced delay makes sense, other deviations are not as explainable. It is interesting to see that saturdays have such a low average delay, since as shown above, they had the most delays overall.
+ggplot(data=no_divert_no_cancel_fd, aes(ArrDelay)) +
+  stat_summary(aes(y = DayOfWeek), fun = "mean", geom = "bar", orientation = 'y') +
+  theme(axis.text.y = element_text(size = 6)) 
+
+#checking september value was legit, it is
+#mean(no_divert_no_cancel_fd[no_divert_no_cancel_fd$Month==9,]$ArrDelay)
+
+```
+
+Overall, we would like to avoid OO airlines, fly on Saturday's, and ideally in the month of September. Over summer and the holidays seem to be an abyss of arrival delays, especially if they were to coincide with a Friday departure.
+
+
+
+
+
+
+
+
+
+
+
