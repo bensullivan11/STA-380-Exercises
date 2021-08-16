@@ -114,6 +114,147 @@ hist(green_onlyb$Rent, xlab = 'Mean Rent for location B', ylab = 'Frequency', co
 ```
 
 It is clearly visible that there are much less green houses in the B part of town, driving the aggragate green price up, dispite it being cheaper than comprabible houses, as they say in the business LOCATION LOCATION LOCATION.
+##Visulization 2
+
+```{r}
+#loading of the data and converting the categorical columns into factors
+library(ggplot2)
+flight_data=read.csv('ABIA.csv')
+flight_data=flight_data[-1]
+#str(flight_data)
+flight_data$UniqueCarrier=as.factor(flight_data$UniqueCarrier)
+no_divert_no_cancel_fd=flight_data[(flight_data$Diverted==0 & flight_data$CancellationCode==''),]
+```
+
+
+
+```{r}
+#plotting distributions of flights per month, day of month, day of week, and unique carriers
+#month is mostly uniform, though flights peak in th summer and tended to tail by the end of the year
+ggplot(flight_data, aes(Month)) +
+  geom_bar(fill = "#0073C2FF")
+#day of month is irrelevant to flight volume
+ggplot(flight_data, aes(DayofMonth)) +
+  geom_bar(fill = "#0073C2FF")
+#week days were fairly even, saturday's were the least flown day
+ggplot(flight_data, aes(DayOfWeek)) +
+  geom_bar(fill = "#0073C2FF")
+#WN is southwest which is the overwhelming majority of flights to and from AIBA
+ggplot(flight_data, aes(UniqueCarrier)) +
+  geom_bar(fill = "#0073C2FF")
+```
+
+```{r Simple Delay Histograms}
+#Here are some histograms of all the different delays, but we will focus mostly on arrival delays
+attach(flight_data)
+hist(x=ArrDelay, col="lightblue", main="Histogram of Arrival Delays", 
+     xlab="Arrival Delays") 
+hist(x=DepDelay, col="lightblue", main="Histogram of Departure Delays", 
+     xlab="Departure Delays")
+hist(x=CarrierDelay, col="lightblue", main="Histogram of Carrier Delays", 
+     xlab="Carrier Delays")
+hist(x=WeatherDelay, col="lightblue", main="Histogram of Weather Delays", 
+     xlab="Weather Delays")
+hist(x=NASDelay, col="lightblue", main="Histogram of NAS Delays", 
+     xlab="NAS Delays")
+hist(x=SecurityDelay, col="lightblue", main="Histogram of Security Delays", 
+     xlab="Security Delays")
+hist(x=LateAircraftDelay, col="lightblue", main="Histogram of Late Aircraft Delays", 
+     xlab="Late Aircraft Delays")
+```
+
+
+```{r Delays by Month}
+# Arrival Delays frequency per month (count of any time delay)
+ArrMonth <- ggplot(data=flight_data, aes(x=Month, y=ArrDelay)) +
+  geom_bar(stat="identity", position='dodge', fill="steelblue") +
+  ggtitle('Arrival Delays by Month') +
+  ylab('Arrival Delays')
+ArrMonth
+# Arrival Delays frequency per day of the week. Interesting to note that saturday is so frequent, when as we see below, is shortest for the average delay
+ArrDayOfWeek <- ggplot(data=flight_data, aes(x=DayOfWeek, y=ArrDelay)) +
+  geom_bar(stat="identity", position='dodge', fill="steelblue") +
+  ggtitle('Arrival Delays by Day of Week') +
+  ylab('Arrival Delays')
+ArrDayOfWeek
+# Arrival Delays plotted over time of day. Delays appear to mount up as the day goes on.
+ArrDayOfWeek <- ggplot(data=flight_data, aes(x=DepTime, y=ArrDelay)) +
+  geom_point(col="red", size=1) +
+  ggtitle('Arrival Delays by Time of Day') +
+  ylab('Arrival Delays')
+ArrDayOfWeek
+```
+
+```{r}
+#plot of the distribution of delays, overall median delay time is about the same for almost all of the different carriers.
+plot(no_divert_no_cancel_fd$UniqueCarrier, no_divert_no_cancel_fd$ArrDelay, labels=no_divert_no_cancel_fd$UniqueCarrier, cex.axis=0.9)
+```
+```{r}
+#calculating number of delayed flights per carrier
+wn_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'WN',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'WN',])
+nineE_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == '9E',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == '9E',])
+aa_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'AA',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'AA',])
+b6_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'B6',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'B6',])
+co_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'CO',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'CO',])
+dl_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'DL',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'DL',])
+ev_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'EV',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'EV',])
+f9_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'F9',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'F9',])
+mq_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'MQ',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'MQ',])
+nw_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'NW',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'NW',])
+oh_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'OH',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'OH',])
+oo_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'OO',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'UA',])
+ua_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'UA',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'UA',])
+us_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'US',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'US',])
+xe_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'XE',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'XE',])
+yv_delay_prop=nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$ArrDelay > 0 & no_divert_no_cancel_fd$UniqueCarrier == 'YV',])/nrow(no_divert_no_cancel_fd[no_divert_no_cancel_fd$UniqueCarrier == 'YV',])
+```
+
+
+```{r}
+delay_prop_vec=c(nineE_delay_prop, aa_delay_prop, b6_delay_prop, co_delay_prop, dl_delay_prop, ev_delay_prop, f9_delay_prop, mq_delay_prop, nw_delay_prop, oh_delay_prop, oo_delay_prop, ua_delay_prop, us_delay_prop, wn_delay_prop, xe_delay_prop, yv_delay_prop)
+#plot of the percentage of flights which are delayed per carrier, 94% of OO's flights are delayed, otherwise mostly uniform
+barplot(delay_prop_vec, names.arg=sort(unique(no_divert_no_cancel_fd$UniqueCarrier),decreasing=FALSE))
+```
+
+```{r}
+#plots of arrival delay in relation to the distance the plane has to travel, no correlation
+plot(no_divert_no_cancel_fd$Distance, no_divert_no_cancel_fd$ArrDelay, type='p')
+cor(no_divert_no_cancel_fd$Distance, no_divert_no_cancel_fd$ArrDelay)
+```
+
+
+
+```{r}
+#converting more columns to factors for these graphs
+no_divert_no_cancel_fd$Origin=as.factor(no_divert_no_cancel_fd$Origin)
+no_divert_no_cancel_fd$Dest=as.factor(no_divert_no_cancel_fd$Dest)
+#graoh of average flight delay based on flight origin
+ggplot(data=no_divert_no_cancel_fd, aes(ArrDelay)) +
+  stat_summary(aes(y = Origin), fun = "mean", geom = "bar", orientation = 'y') +
+  theme(axis.text.y = element_text(size = 6))  
+#graph of average flight delay based on flight destination
+ggplot(data=no_divert_no_cancel_fd, aes(ArrDelay)) +
+  stat_summary(aes(y = Dest), fun = "mean", geom = "bar", orientation = 'y') +
+  theme(axis.text.y = element_text(size = 6)) 
+```
+
+
+```{r}
+#average arrival delay plotted agaist the month and day of the week
+#september, october, and november all have very short delays, december, june, and march all have above average delays, the rest of the months are fairly uniform
+ggplot(data=no_divert_no_cancel_fd, aes(ArrDelay)) +
+  stat_summary(aes(y = Month), fun = "mean", geom = "bar", orientation = 'y') +
+  theme(axis.text.y = element_text(size = 6)) 
+#Saturday's are less flown days, so reduced delay makes sense, other deviations are not as explainable. It is interesting to see that saturdays have such a low average delay, since as shown above, they had the most delays overall.
+ggplot(data=no_divert_no_cancel_fd, aes(ArrDelay)) +
+  stat_summary(aes(y = DayOfWeek), fun = "mean", geom = "bar", orientation = 'y') +
+  theme(axis.text.y = element_text(size = 6)) 
+#checking september value was legit, it is
+#mean(no_divert_no_cancel_fd[no_divert_no_cancel_fd$Month==9,]$ArrDelay)
+```
+
+Overall, we would like to avoid OO airlines, fly on Saturday's, and ideally in the month of September. Over summer and the holidays seem to be an abyss of arrival delays, especially if they were to coincide with a Friday departure.
+
 
 
 ##THE PORTFOLIO SIMULATION
@@ -329,6 +470,12 @@ After grouping NutrientH20's social media audience into 5 separate clusters, we 
 # Author Attribution
 
 ## Set up
+
+To begin, we imported several libraries to help with reading the data, creating a corpus, dimensionality reduction, creating a naive bayes algorithm, and generating random forests.
+
+Libraries to set up include: tm, magrittr, e1071, caret, class, plyr, dplyr, and randomForest.
+
+We also defined a readerPlain function to extract the data in the next step.
 ```{r Set Up}
 library(tm) 
 library(magrittr)
@@ -337,7 +484,6 @@ library(caret)
 library(class)
 library(plyr)
 library(dplyr)
-library(e1071)
 library(randomForest)
 
 readerPlain = function(fname){
@@ -345,6 +491,12 @@ readerPlain = function(fname){
 ```
 
 ## Train Set Up
+
+To set up the train data, we used Sys.glob to import the necessary data files. Next, two empty lists were generated to store data from the files. 
+
+Next, we used a for loop to read through and extract all of the folders and authors in the dataset and store the essential data (such as the individual works of each author along with their name) in the empty lists we created.
+
+Then we used the readerPlain function and lapply to clean the file names from our no longer empty lists.
 ```{r Train Set Up}
 train = Sys.glob('ReutersC50/C50train/*')
 
@@ -364,6 +516,12 @@ names(all_work_train) = sub('.txt', '', names(all_work_train))
 ```
 
 ## Creating a Train Mining Corpus and Pre-Processing
+
+We then created a text mining corpus for the compiled list of authors' work in the previous step. 
+
+Using tm_map, we then began the pre-processing and tokenization. During this process, we converted the text to all lowercase, removed any numbers, removed all punctuation, removed any unnecessary spaces, and removed a few stopwords. 
+
+We then created a DocumentTermMatrix for the train data using the finalized corpus and a weighting of weightTfIdf. From the train DTM, we removed any sparse terms not in the 95th percentile of words from all documents. This DTM was printed below to get a basic summary, then set as a matrix.
 ```{r Train Corpus and Pre-Processing}
 train_corp = Corpus(VectorSource(all_work_train))
 
@@ -377,10 +535,15 @@ train_DTM = DocumentTermMatrix(train_corp, list(weighting=weightTfIdf))
 train_DTM = removeSparseTerms(train_DTM, 0.95)
 train_DTM
 train_DTM = as.matrix(train_DTM)
-train_DTM = as.data.frame(train_DTM)
 ```
 
 ## Test Set Up
+
+To set up the test data, we repeated steps from the train data. First, we used Sys.glob to import the necessary data files. Next, two empty lists were generated to store data from the files. 
+
+We then used a for loop to read through and extract all of the folders and authors in the dataset and store the essential data (such as the individual works of each author along with their name) in the empty lists we created.
+
+Then we used the readerPlain function and lapply to clean the file names from our no longer empty lists.
 ```{r Test Set Up}
 test = Sys.glob('ReutersC50/C50test/*')
 
@@ -400,6 +563,12 @@ names(all_work_test) = sub('.txt', '', names(all_work_test))
 ```
 
 ## Creating a Test Mining Corpus and Pre-Processing
+
+The corpus generation and pre-processing was also similar to previous steps. We created a text mining corpus for the compiled list of authors' work in the previous step. 
+
+Using tm_map, we then began the pre-processing and tokenization. During this process, we converted the text to all lowercase, removed any numbers, removed all punctuation, removed any unnecessary spaces, and removed a few stopwords. 
+
+We then created a DocumentTermMatrix for the train data using the finalized corpus and a weighting of weightTfIdf. From the train DTM, we removed any sparse terms not in the 95th percentile of words from all documents. The DTM also used specified a dictionary of column names from the train DTM. This DTM was printed below to get a basic summary, then set as a matrix.
 ```{r Test Corpus and Pre-Processing}
 test_corp = Corpus(VectorSource(all_work_test))
 
@@ -414,10 +583,13 @@ test_DTM = DocumentTermMatrix(test_corp, list(weighting=weightTfIdf,
 test_DTM = removeSparseTerms(test_DTM, 0.95)
 test_DTM
 test_DTM = as.matrix(test_DTM)
-test_DTM = as.data.frame(test_DTM)
 ```
 
 ## Dimensionality Reduction
+
+As part of the dimensionality reduction in order to build supervised models in later steps, we first cleaned the DTMs to exclude any 0 values and crosscheck elements in both DTMs.
+
+We then used principal component analysis (prcomp) on the train set and created a new train class data frame that fits the size of the test DTM [,1:592]. We then did the same for the test DTM.
 ```{r Dimensionality Reduction}
 train_DTM = train_DTM[,which(colSums(train_DTM) != 0)] 
 test_DTM = test_DTM[,which(colSums(test_DTM) != 0)]
@@ -433,6 +605,10 @@ test_class <- as.data.frame(test_class)
 ```
 
 ## Naive Bayes
+
+Classification tags were then created and set as a factor using the train and test labels created previously and added to the new train and test classes.
+
+A naive bayes algorithm was developed using train class and train classifiers. Based on this algorithm, predictions for the test class were developed. A temporary dataframe was then created to find the number of correct predictions and discover and the accuracy of the model, which turned out to be around 30%.
 ```{r Naive Bayes Model}
 train_class['classifier'] = train_labels
 test_class['result'] = test_labels
@@ -449,10 +625,15 @@ sum(temp$tag)*100/nrow(temp)
 ```
 
 ## Random Forest
+
+For our random forest models, a seed was set, and the rf algorithm was developed using the train class and classifiers. We tested several different number of trees and mtry values to hypertune our model, but the code takes a significant amount of time to process, so only our best model was used in the code below (ntree=500, mtry=8).
+
+A temporary dataframe was then created to find the number of correct predictions and discover and the accuracy of the model, which turned out to be around 82.68%, making this our best performing model.
 ```{r Random Forest Model}
+
 set.seed(1)
 
-author_rf = randomForest(classifiers~.,data=train_class, ntree=500, mtry=8,importance=TRUE)
+author_rf = randomForest(classifiers~.,data=train_class, ntree=5, mtry=8,importance=TRUE)
 rf_preds = predict(author_rf,data=test_class)
 author_rf
 
@@ -461,20 +642,7 @@ temp$tag = ifelse(temp$results == temp$rf_preds,1,0)
 sum(temp$tag)*100/nrow(temp)
 ```
 
-## K-Nearest Neighbors
-```{r KNN Model}
-train_class = na.omit(train_class)
-test_class = na.omit(test_class)
-train_x = as.factor(subset(train_class, select = -c(classifiers)))
-test_x = as.factor(subset(test_class,select=-c(results)))
-classifiers = as.factor(train_class$classifier)
 
-knn_preds = knn(train_x,test_x,classifiers,k=1)
-
-temp = as.data.frame(cbind(results,knn_preds))
-temp$tag = ifelse(temp$results == temp$knn_preds,1,0)
-sum(temp$tag)*100/nrow(temp)
-```
 ##Association Rules problem
 ```{r}
 library(reshape2)
