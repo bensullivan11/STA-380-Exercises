@@ -1,0 +1,71 @@
+---
+title: "STA380_AR"
+output: word_document
+---
+
+```{r}
+library(reshape2)
+library(arules)
+library(arulesViz)
+
+```
+
+```{r}
+#loading and cleaning data which can be forced into a transaction type for the apriori algorithm
+grocery_data=read.csv('groceries.txt', header = FALSE)
+grocery_data$List=rownames(grocery_data)
+grocery_data$List=as.integer(grocery_data$List)
+
+grocery_melt=melt(grocery_data, id.vars='List')
+grocery_melt=grocery_melt[,-2]
+
+
+grocery_melt=grocery_melt[!(grocery_melt$value == ""), ]
+```
+
+
+```{r}
+#converting the list into the transaction form for the apriori algorithm
+grocery_melt$List=as.factor(grocery_melt$List)
+grocery_lists=split(x=grocery_melt$value, f=grocery_melt$List)
+
+grocery_transactions = as(grocery_lists, "transactions")
+```
+
+```{r}
+#creating the association rules
+grocery_rules=apriori(grocery_transactions, parameter=list(support=.005, confidence=.1, maxlen=10))
+
+#list of all association rules
+inspect(grocery_rules)
+
+#graphs for some metrics, two-key plot shows short lists have higher support and low confidence while longer lists tend to be the opposite
+plot(grocery_rules)
+plot(grocery_rules, method='two-key plot')
+
+#visualization of clusters of items bought together based on specific confidence and support cutoffs
+sub1 = subset(grocery_rules, subset=confidence > 0.01 & support > 0.005)
+summary(sub1)
+plot(sub1, method='graph')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
