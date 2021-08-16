@@ -305,11 +305,12 @@ simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
     wealthtracker
 }
 head(simulation)
+```
+```{r echo = FALSE}
 hist(simulation[,n_days], 25)
 
 ```
 ```{r echo=FALSE}
-simulation
 plot(wealthtracker, type = 'l')
 ```
 The VAR for the safeish portfolio is this. Meaning you can be 95% confident this is the most you'll lose
@@ -352,8 +353,11 @@ head(simulation)
 hist(simulation[,n_days], 25)
 
 ```
+
+```{r echo = FALSE}
+hist(simulation[,n_days], 25)
+```
 ```{r echo=FALSE}
-simulation
 plot(wealthtracker, type = 'l')
 ```
 The VAR for the green portfolio is this. Meaning you can be 95% confident this is the most you'll lose
@@ -378,7 +382,7 @@ N = nrow(all_returns)
 ```
 This is full of stocks that track tech indexes
 
-```{r echo=FALSE}
+```{r include=FALSE}
 wealth = 100000
 simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
   total_wealth = wealth
@@ -395,11 +399,17 @@ simulation = foreach(i=1:5000, .combine = 'rbind') %do% {
   wealthtracker
 }
 head(simulation)
-hist(simulation[,n_days], 25)
-
 ```
-```{r echo=FALSE}
+
+```{r echo = FALSE}
+hist(simulation[,n_days], 25)
+```
+
+```{r include=FALSE}
 simulation
+```
+```{r echo = FALSE}
+hist(simulation[,n_days], 25)
 plot(wealthtracker, type = 'l')
 ``` 
 The VAR for the Tech portfolio is this. Meaning you can be 95% confident this is the most you'll lose
@@ -610,18 +620,18 @@ Classification tags were then created and set as a factor using the train and te
 
 A naive bayes algorithm was developed using train class and train classifiers. Based on this algorithm, predictions for the test class were developed. A temporary dataframe was then created to find the number of correct predictions and discover and the accuracy of the model, which turned out to be around 30%.
 ```{r Naive Bayes Model}
-train_class['classifier'] = train_labels
-test_class['result'] = test_labels
-
-classifiers = as.factor(train_class$classifier)
-results = as.factor(test_class$result)
-
-author_nb = naiveBayes(classifiers~., data=train_class)
-nb_preds = predict(author_nb, test_class)
-
-temp = as.data.frame(cbind(results,nb_preds))
-temp$tag = ifelse(temp$results == temp$nb_preds,1,0)
-sum(temp$tag)*100/nrow(temp)
+# train_class['classifier'] = train_labels
+# test_class['result'] = test_labels
+# 
+# classifiers = as.factor(train_class$classifier)
+# results = as.factor(test_class$result)
+# 
+# author_nb = naiveBayes(classifiers~., data=train_class)
+# nb_preds = predict(author_nb, test_class)
+# 
+# temp = as.data.frame(cbind(results,nb_preds))
+# temp$tag = ifelse(temp$results == temp$nb_preds,1,0)
+# sum(temp$tag)*100/nrow(temp)
 ```
 
 ## Random Forest
@@ -631,15 +641,15 @@ For our random forest models, a seed was set, and the rf algorithm was developed
 A temporary dataframe was then created to find the number of correct predictions and discover and the accuracy of the model, which turned out to be around 82.68%, making this our best performing model.
 ```{r Random Forest Model}
 
-set.seed(1)
-
-author_rf = randomForest(classifiers~.,data=train_class, ntree=5, mtry=8,importance=TRUE)
-rf_preds = predict(author_rf,data=test_class)
-author_rf
-
-temp = as.data.frame(cbind(results,rf_preds))
-temp$tag = ifelse(temp$results == temp$rf_preds,1,0)
-sum(temp$tag)*100/nrow(temp)
+# set.seed(1)
+# 
+# author_rf = randomForest(classifiers~.,data=train_class, ntree=5, mtry=8,importance=TRUE)
+# rf_preds = predict(author_rf,data=test_class)
+# author_rf
+# 
+# temp = as.data.frame(cbind(results,rf_preds))
+# temp$tag = ifelse(temp$results == temp$rf_preds,1,0)
+# sum(temp$tag)*100/nrow(temp)
 ```
 
 
